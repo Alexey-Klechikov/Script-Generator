@@ -39,41 +39,35 @@ class GUI(GUI_front_end):
         # Triggers
         self.pushButton_create.clicked.connect(self.create_button_click)
         self.pushButton_preview.clicked.connect(self.preview_button_click)
-        self.toolButton_save_at.clicked.connect(self.button_SaveDir)
 
         self.actionVersion.triggered.connect(self.menu_info)
 
-    def button_SaveDir(self):
-        saveAt = QtWidgets.QFileDialog().getExistingDirectory()
-        if not saveAt: return
-        self.lineEdit_save_at.setText(str(saveAt) + "/Script.dat")
-        self.lineEdit_save_at.setText(self.lineEdit_save_at.text().replace("//", "/"))
-
     def create_button_click(self):
-
         plot_time.clear()
         plot_th.clear()
         plot_s1hg.clear()
         plot_s2hg.clear()
 
+        saveAt_dir = QtWidgets.QFileDialog().getExistingDirectory()
+        if not saveAt_dir: return
+
         last_values = [99, 0, 0, 0]  # th s1hg s2hg total_time - this is needed to "connect" segments if more than 1 is needed
 
-        if not self.lineEdit_save_at.text(): self.lineEdit_save_at.setText(current_dir + "/Script.dat")
-        self.lineEdit_save_at.setText(self.lineEdit_save_at.text().replace("//", "/"))
+        saveAt = saveAt_dir + "/Script.dat"
 
         # write the first line with motor names and erase file if required
-        script_file = open(self.lineEdit_save_at.text(), "w")
+        script_file = open(saveAt, "w")
         script_file.write("#M th tth s1hg s2hg \n")
         script_file.close()
 
         # same for direct beam file
-        script_file_DB = open(self.lineEdit_save_at.text()[:-4] + "_DB.dat", "w")
+        script_file_DB = open(saveAt[:-4] + "_DB.dat", "w")
         script_file_DB.write("#M th tth s1hg s2hg \n")
         script_file_DB.close()
 
         # continue to write to the files
-        script_file = open(self.lineEdit_save_at.text(), "a")
-        script_file_DB = open(self.lineEdit_save_at.text()[:-4] + "_DB.dat", "a")
+        script_file = open(saveAt, "a")
+        script_file_DB = open(saveAt[:-4] + "_DB.dat", "a")
 
         # check number of filled segments
         notEmpty_segments = 0
@@ -157,20 +151,20 @@ class GUI(GUI_front_end):
         script_file_DB.close()
 
         try:
-            os.rename(self.lineEdit_save_at.text()[:-4] + "_DB.dat",
-                      self.lineEdit_save_at.text()[:-4] + "_" + str(round(last_values[3] / 60, 2)) + "min_DB.dat")
+            os.rename(saveAt[:-4] + "_DB.dat",
+                      saveAt[:-4] + "_" + str(round(last_values[3] / 60, 2)) + "min_DB.dat")
         except WindowsError:  # check if there already is a file with the same name in the folder -> overwrite then
-            os.remove(self.lineEdit_save_at.text()[:-4] + "_" + str(round(last_values[3] / 60, 2)) + "min_DB.dat")
-            os.rename(self.lineEdit_save_at.text()[:-4] + "_DB.dat",
-                      self.lineEdit_save_at.text()[:-4] + "_" + str(round(last_values[3] / 60, 2)) + "min_DB.dat")
+            os.remove(saveAt[:-4] + "_" + str(round(last_values[3] / 60, 2)) + "min_DB.dat")
+            os.rename(saveAt[:-4] + "_DB.dat",
+                      saveAt[:-4] + "_" + str(round(last_values[3] / 60, 2)) + "min_DB.dat")
 
 
         try:
-            os.rename(self.lineEdit_save_at.text(), self.lineEdit_save_at.text()[:-4] + "_" + str(round(last_values[3] / 60, 2)) + "min.dat")
+            os.rename(saveAt, saveAt[:-4] + "_" + str(round(last_values[3] / 60, 2)) + "min.dat")
 
         except WindowsError:  # check if there already is a file with the same name in the folder -> overwrite then
-            os.remove(self.lineEdit_save_at.text()[:-4] + "_" + str(round(last_values[3] / 60, 2)) + "min.dat")
-            os.rename(self.lineEdit_save_at.text(), self.lineEdit_save_at.text()[:-4] + "_" + str(round(last_values[3] / 60, 2)) + "min.dat")
+            os.remove(saveAt[:-4] + "_" + str(round(last_values[3] / 60, 2)) + "min.dat")
+            os.rename(saveAt, saveAt[:-4] + "_" + str(round(last_values[3] / 60, 2)) + "min.dat")
 
         self.draw()
 
@@ -255,7 +249,7 @@ class GUI(GUI_front_end):
 
         self.draw()
 
-        self.statusbar.showMessage("Total time to execute the script is: ~" + str(round(last_values[3] / 60, 2)) + "min")
+        self.statusbar.showMessage("Total time to execute script is approximately: " + str(round(last_values[3] / 60, 2)) + "min")
 
     def draw(self):
 
