@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-import os, math, re
+import os, math, re, sys
 import pyqtgraph as pg
 
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -12,10 +12,7 @@ s1hg_minimum_step = 0.05
 s2hg_minimum_step = 0.01
 th_minimum_step = 0.005
 
-plot_time = []
-plot_th = []
-plot_s1hg = []
-plot_s2hg = []
+plot_time, plot_th, plot_s1hg, plot_s2hg = [], [], [], []
 
 class step:
     def __init__(self, th, s1hg, s1hg_temp, s2hg, s2hg_temp, time):
@@ -27,6 +24,32 @@ class step:
         self.time = time
 
 class Ui_MainWindow(QtWidgets.QMainWindow):
+
+    current_dir = ""
+    for i in sys.argv[0].split("/")[:-4]: current_dir += i + "/"
+
+    def __create_element(self, object, geometry, object_name, text=None, font=None, placeholder=None, visible=None, stylesheet=None, checked=None, checkable=None, title=None, combo=None, enabled=None):
+
+
+        object.setObjectName(object_name)
+
+        if not geometry == [999, 999, 999, 999]:
+            object.setGeometry(QtCore.QRect(geometry[0], geometry[1], geometry[2], geometry[3]))
+
+        if not text == None: object.setText(text)
+        if not title == None: object.setTitle(title)
+        if not font == None: object.setFont(font)
+        if not placeholder == None: object.setPlaceholderText(placeholder)
+        if not visible == None: object.setVisible(visible)
+        if not checked == None: object.setChecked(checked)
+        if not checkable == None: object.setCheckable(checked)
+        if not enabled == None: object.setEnabled(enabled)
+
+        if not stylesheet == None: object.setStyleSheet(stylesheet)
+
+        if not combo == None:
+            for i in combo: object.addItem(str(i))
+
 
     def setupUi(self, MainWindow):
 
@@ -48,11 +71,13 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         pg.setConfigOption('foreground', 'k')
 
         # Main Window
+        MainWindow_size = [500, 790]
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(500, 790)
-        MainWindow.setMinimumSize(QtCore.QSize(500, 790))
-        MainWindow.setMaximumSize(QtCore.QSize(500, 790))
+        MainWindow.resize(MainWindow_size[0], MainWindow_size[1])
+        MainWindow.setMinimumSize(QtCore.QSize(MainWindow_size[0], MainWindow_size[1]))
+        MainWindow.setMaximumSize(QtCore.QSize(MainWindow_size[0], MainWindow_size[1]))
         MainWindow.setWindowTitle("pySAgen")
+        MainWindow.setWindowIcon(QtGui.QIcon(self.current_dir + "\icon.png"))
         MainWindow.setIconSize(QtCore.QSize(30, 30))
 
         # Block: Table
@@ -60,62 +85,35 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.centralwidget.setObjectName("centralwidget")
         MainWindow.setCentralWidget(self.centralwidget)
         self.tableWidget = QtWidgets.QTableWidget(self.centralwidget)
-        self.tableWidget.setGeometry(QtCore.QRect(5, 5, 490, 118))
-        self.tableWidget.setFont(font_ee)
+        self.__create_element(self.tableWidget, [5, 5, 490, 118], "tableWidget", font=font_ee)
         self.tableWidget.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.tableWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setRowCount(5)
 
         # Checkboxes
         self.checkBox_Create_DB_file = QtWidgets.QCheckBox(self.centralwidget)
-        self.checkBox_Create_DB_file.setFont(font_ee)
-        self.checkBox_Create_DB_file.setGeometry(QtCore.QRect(5, 147, 150, 16))
-        self.checkBox_Create_DB_file.setObjectName("checkBox_Create_DB_file")
-        self.checkBox_Create_DB_file.setText("Create script for DB")
-        self.checkBox_Create_DB_file.setVisible(False)
-        self.checkBox_Create_DB_file.setChecked(False)
+        self.__create_element(self.checkBox_Create_DB_file, [5, 147, 150, 16], "checkBox_Create_DB_file", text="Create script for DB", visible=False, checked=False, font=font_ee)
         self.checkBox_Slits_s1hg = QtWidgets.QCheckBox(self.centralwidget)
-        self.checkBox_Slits_s1hg.setFont(font_ee)
-        self.checkBox_Slits_s1hg.setGeometry(QtCore.QRect(5, 127, 120, 16))
-        self.checkBox_Slits_s1hg.setObjectName("checkBox_Slits_s1hg")
-        self.checkBox_Slits_s1hg.setText("s1hg")
-        self.checkBox_Slits_s1hg.setChecked(False)
+        self.__create_element(self.checkBox_Slits_s1hg, [5, 127, 120, 16], "checkBox_Slits_s1hg", text="s1hg", checked=False, font=font_ee)
         self.checkBox_Slits_s2hg = QtWidgets.QCheckBox(self.centralwidget)
-        self.checkBox_Slits_s2hg.setFont(font_ee)
-        self.checkBox_Slits_s2hg.setGeometry(QtCore.QRect(60, 127, 120, 16))
-        self.checkBox_Slits_s2hg.setObjectName("checkBox_Slits_s2hg")
-        self.checkBox_Slits_s2hg.setText("s2hg")
-        self.checkBox_Slits_s2hg.setChecked(False)
+        self.__create_element(self.checkBox_Slits_s2hg, [60, 127, 120, 16], "checkBox_Slits_s2hg", text="s2hg", checked=False, font=font_ee)
 
         # Button: Create
         self.pushButton_create = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_create.setGeometry(QtCore.QRect(425, 150, 70, 22))
-        self.pushButton_create.setFont(font_headline)
-        self.pushButton_create.setObjectName("pushButton_create")
-        self.pushButton_create.setText("Create")
+        self.__create_element(self.pushButton_create, [425, 150, 70, 22], "pushButton_create", text="Create", font=font_headline)
 
         # Button: Preview
         self.pushButton_preview = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_preview.setGeometry(QtCore.QRect(425, 127, 70, 22))
-        self.pushButton_preview.setFont(font_headline)
-        self.pushButton_preview.setObjectName("pushButton_preview")
-        self.pushButton_preview.setText("Preview")
+        self.__create_element(self.pushButton_preview, [425, 127, 70, 22], "pushButton_preview", text="Preview", font=font_headline)
 
         # Graph: th vs time
         self.label_th_vs_time = QtWidgets.QLabel(self.centralwidget)
-        self.label_th_vs_time.setGeometry(QtCore.QRect(140, 158, 219, 31))
-        self.label_th_vs_time.setFont(font_headline)
-        self.label_th_vs_time.setObjectName("label_th_vs_time")
-        self.label_th_vs_time.setText("th (degrees) vs Time per step (s)")
+        self.__create_element(self.label_th_vs_time, [140, 158, 219, 31], "label_th_vs_time", text="th (degrees) vs Time per step (s)", font=font_headline)
         self.groupBox_th_vs_time = QtWidgets.QGroupBox(self.centralwidget)
-        self.groupBox_th_vs_time.setGeometry(QtCore.QRect(5, 170, 490, 290))
-        self.groupBox_th_vs_time.setTitle("")
-        self.groupBox_th_vs_time.setObjectName("groupBox_th_vs_time")
+        self.__create_element(self.groupBox_th_vs_time, [5, 170, 490, 290], "groupBox_th_vs_time", title="")
         self.graphicsView_th_vs_time = pg.PlotWidget(self.centralwidget, view=pg.PlotItem(viewBox=pg.ViewBox()))
-        self.graphicsView_th_vs_time.setGeometry(QtCore.QRect(7, 189, 487, 270))
-        self.graphicsView_th_vs_time.setObjectName("graphicsView_th_vs_time")
+        self.__create_element(self.graphicsView_th_vs_time, [7, 189, 487, 270], "graphicsView_th_vs_time")
         self.graphicsView_th_vs_time.getAxis("bottom").tickFont = font_graphs
         self.graphicsView_th_vs_time.getAxis("bottom").setStyle(tickTextOffset=10)
         self.graphicsView_th_vs_time.getAxis("left").tickFont = font_graphs
@@ -127,17 +125,11 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         # Graph: tv vs s1hg, s2hg
         self.label_th_vs_s1hg_s2hg = QtWidgets.QLabel(self.centralwidget)
-        self.label_th_vs_s1hg_s2hg.setGeometry(QtCore.QRect(140, 465, 261, 31))
-        self.label_th_vs_s1hg_s2hg.setFont(font_headline)
-        self.label_th_vs_s1hg_s2hg.setObjectName("label_th_vs_s1hg_s2hg")
-        self.label_th_vs_s1hg_s2hg.setText("th (degrees) vs s1hg (mm), s2hg (mm)")
+        self.__create_element(self.label_th_vs_s1hg_s2hg, [140, 465, 261, 31], "label_th_vs_s1hg_s2hg", text="th (degrees) vs s1hg (mm), s2hg (mm)", font=font_headline)
         self.groupBox_th_vs_s1hg_s2hg = QtWidgets.QGroupBox(self.centralwidget)
-        self.groupBox_th_vs_s1hg_s2hg.setGeometry(QtCore.QRect(5, 477, 490, 290))
-        self.groupBox_th_vs_s1hg_s2hg.setTitle("")
-        self.groupBox_th_vs_s1hg_s2hg.setObjectName("groupBox_th_vs_s1hg_s2hg")
+        self.__create_element(self.groupBox_th_vs_s1hg_s2hg, [5, 477, 490, 290], "groupBox_th_vs_s1hg_s2hg", title="")
         self.graphicsView_th_vs_s1hg_s2hg = pg.PlotWidget(self.centralwidget, view=pg.PlotItem(viewBox=pg.ViewBox()))
-        self.graphicsView_th_vs_s1hg_s2hg.setGeometry(QtCore.QRect(7, 496, 487, 270))
-        self.graphicsView_th_vs_s1hg_s2hg.setObjectName("graphicsView_th_vs_s1hg_s2hg")
+        self.__create_element(self.graphicsView_th_vs_s1hg_s2hg, [7, 496, 487, 270], "graphicsView_th_vs_s1hg_s2hg")
         self.graphicsView_th_vs_s1hg_s2hg.getAxis("bottom").tickFont = font_graphs
         self.graphicsView_th_vs_s1hg_s2hg.getAxis("bottom").setStyle(tickTextOffset=10)
         self.graphicsView_th_vs_s1hg_s2hg.getAxis("left").tickFont = font_graphs
@@ -150,17 +142,14 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         # MenuBar
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 699, 21))
-        self.menubar.setObjectName("menubar")
+        self.__create_element(self.menubar, [0, 0, 699, 21], "menubar")
         self.menuHelp = QtWidgets.QMenu(self.menubar)
-        self.menuHelp.setObjectName("menuHelp")
-        self.menuHelp.setTitle("Help")
+        self.__create_element(self.menuHelp, [999, 999, 999, 999], "menuHelp", title="Help")
         MainWindow.setMenuBar(self.menubar)
         self.actionAlgorithm_info = QtWidgets.QAction(MainWindow)
-        self.actionAlgorithm_info.setObjectName("actionAlgorithm_info")
+        self.__create_element(self.actionAlgorithm_info, [999, 999, 999, 999], "actionAlgorithm_info")
         self.actionVersion = QtWidgets.QAction(MainWindow)
-        self.actionVersion.setObjectName("actionVersion")
-        self.actionVersion.setText("Version 1.1")
+        self.__create_element(self.actionVersion, [999, 999, 999, 999], "actionVersion", text="Version 1.1")
         self.menuHelp.addAction(self.actionVersion)
         self.menubar.addAction(self.menuHelp.menuAction())
 
@@ -171,9 +160,6 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.statusbar.showMessage("Total time to execute script is approximately: ")
 
 class GUI(Ui_MainWindow):
-
-    current_dir = ""
-    for i in sys.argv[0].split("/")[:-4]: current_dir += i + "/"
 
     def __init__(self):
         super(GUI, self).__init__()
@@ -363,7 +349,7 @@ class GUI(Ui_MainWindow):
             column_widths = [105, 105, 130, 137]
             default_line = ["0:2", "0.5:1", "5:60", "50"]
 
-            self.MW_size = 790
+            self.MW_size = 810
             self.label_th_vs_s1hg_s2hg.setText("th (degrees) vs s1hg (mm)")
             self.label_th_vs_s1hg_s2hg.setGeometry(QtCore.QRect(165, 465, 261, 31))
             self.checkBox_Create_DB_file.setVisible(True)
@@ -375,7 +361,7 @@ class GUI(Ui_MainWindow):
             column_widths = [105, 105, 130, 137]
             default_line = ["0:2", "0.5:1", "5:60", "50"]
 
-            self.MW_size = 790
+            self.MW_size = 810
             self.label_th_vs_s1hg_s2hg.setText("th (degrees) vs s2hg (mm)")
             self.label_th_vs_s1hg_s2hg.setGeometry(QtCore.QRect(165, 465, 261, 31))
             self.checkBox_Create_DB_file.setVisible(True)
@@ -387,7 +373,7 @@ class GUI(Ui_MainWindow):
             column_widths = [80, 85, 85, 110, 117]
             default_line = ["0:2", "0.5:1", "1", "5:60", "50"]
 
-            self.MW_size = 790
+            self.MW_size = 810
             self.label_th_vs_s1hg_s2hg.setText("th (degree) vs s1hg (mm), s2hg (mm)")
             self.label_th_vs_s1hg_s2hg.setGeometry(QtCore.QRect(130, 465, 261, 31))
             self.checkBox_Create_DB_file.setVisible(True)
@@ -429,14 +415,13 @@ class GUI(Ui_MainWindow):
     def menu_info(self):
 
         msgBox = QtWidgets.QMessageBox()
+        msgBox.setWindowIcon(QtGui.QIcon(self.current_dir + "\icon.png"))
         msgBox.setText("pySAgen V1.1\n\n"
                        "Alexey.Klechikov@gmail.com\n\n"
                        "Check new version at https://github.com/Alexey-Klechikov/pySAgen/releases")
         msgBox.exec_()
 
 if __name__ == "__main__":
-    import sys
-
     QtWidgets.QApplication.setStyle("Fusion")
     app = QtWidgets.QApplication(sys.argv)
     prog = GUI()
