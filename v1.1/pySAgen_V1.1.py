@@ -14,14 +14,14 @@ import pyqtgraph as pg
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
-current_dir = os.path.dirname(os.path.realpath(__file__)).replace("\\", "/")
+dir_current = os.path.dirname(os.path.realpath(__file__)).replace("\\", "/")
 
 # min steps for slits and motors
-s1hg_minimum_step = 0.05
-s2hg_minimum_step = 0.01
-th_minimum_step = 0.005
+s1hg_stepMinimum = 0.05
+s2hg_stepMinimum = 0.01
+th_stepMinimum = 0.005
 
-plot_time, plot_th, plot_s1hg, plot_s2hg = [], [], [], []
+time_plot, th_plot, s1hg_plot, s2hg_plot = [], [], [], []
 
 class step:
     def __init__(self, th, s1hg, s1hg_temp, s2hg, s2hg_temp, time):
@@ -35,15 +35,15 @@ class step:
 class Ui_MainWindow(QtWidgets.QMainWindow):
 
     # PyQt version/OS fix
-    current_dir = ""
-    if platform.system() == 'Windows': current_dir, groupbox_os_displ = os.getcwd().replace("\\", "/") + "/", 0
+    dir_current = ""
+    if platform.system() == 'Windows': dir_current, offset_os = os.getcwd().replace("\\", "/") + "/", 0
     else:
-        for i in sys.argv[0].split("/")[:-4]: current_dir += i + "/"
-        groupbox_os_displ = 2
+        for i in sys.argv[0].split("/")[:-4]: dir_current += i + "/"
+        offset_os = 2
 
-    def __create_element(self, object, geometry, object_name, text=None, font=None, placeholder=None, visible=None, stylesheet=None, checked=None, checkable=None, title=None, combo=None, enabled=None):
+    def __create_element(self, object, geometry, objectName, text=None, font=None, placeholder=None, visible=None, stylesheet=None, checked=None, checkable=None, title=None, combo=None, enabled=None):
 
-        object.setObjectName(object_name)
+        object.setObjectName(objectName)
 
         if not geometry == [999, 999, 999, 999]:
             object.setGeometry(QtCore.QRect(geometry[0], geometry[1], geometry[2], geometry[3]))
@@ -108,12 +108,12 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.tableWidget.setRowCount(5)
 
         # Checkboxes
-        self.checkBox_Create_DB_file = QtWidgets.QCheckBox(self.centralwidget)
-        self.__create_element(self.checkBox_Create_DB_file, [5, 147, 150, 16], "checkBox_Create_DB_file", text="Create script for DB", visible=False, checked=False, font=font_ee)
-        self.checkBox_Slits_s1hg = QtWidgets.QCheckBox(self.centralwidget)
-        self.__create_element(self.checkBox_Slits_s1hg, [5, 127, 120, 16], "checkBox_Slits_s1hg", text="s1hg", checked=False, font=font_ee)
-        self.checkBox_Slits_s2hg = QtWidgets.QCheckBox(self.centralwidget)
-        self.__create_element(self.checkBox_Slits_s2hg, [60, 127, 120, 16], "checkBox_Slits_s2hg", text="s2hg", checked=False, font=font_ee)
+        self.checkBox_createDBfile = QtWidgets.QCheckBox(self.centralwidget)
+        self.__create_element(self.checkBox_createDBfile, [5, 147, 150, 16], "checkBox_createDBfile", text="Create script for DB", visible=False, checked=False, font=font_ee)
+        self.checkBox_slits_s1hg = QtWidgets.QCheckBox(self.centralwidget)
+        self.__create_element(self.checkBox_slits_s1hg, [5, 127, 120, 16], "checkBox_slits_s1hg", text="s1hg", checked=False, font=font_ee)
+        self.checkBox_slits_s2hg = QtWidgets.QCheckBox(self.centralwidget)
+        self.__create_element(self.checkBox_slits_s2hg, [60, 127, 120, 16], "checkBox_slits_s2hg", text="s2hg", checked=False, font=font_ee)
 
         # Button: Create
         self.pushButton_create = QtWidgets.QPushButton(self.centralwidget)
@@ -124,37 +124,37 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.__create_element(self.pushButton_preview, [425, 127, 70, 22], "pushButton_preview", text="Preview", font=font_headline)
 
         # Graph: th vs time
-        self.label_th_vs_time = QtWidgets.QLabel(self.centralwidget)
-        self.__create_element(self.label_th_vs_time, [140, 158, 219, 31], "label_th_vs_time", text="th (degrees) vs Time per step (s)", font=font_headline)
-        self.groupBox_th_vs_time = QtWidgets.QGroupBox(self.centralwidget)
-        self.__create_element(self.groupBox_th_vs_time, [5, 170-self.groupbox_os_displ, 490, 290+self.groupbox_os_displ], "groupBox_th_vs_time", title="")
-        self.graphicsView_th_vs_time = pg.PlotWidget(self.centralwidget, view=pg.PlotItem(viewBox=pg.ViewBox()))
-        self.__create_element(self.graphicsView_th_vs_time, [7, 189, 487, 270], "graphicsView_th_vs_time")
-        self.graphicsView_th_vs_time.getAxis("bottom").tickFont = font_graphs
-        self.graphicsView_th_vs_time.getAxis("bottom").setStyle(tickTextOffset=10)
-        self.graphicsView_th_vs_time.getAxis("left").tickFont = font_graphs
-        self.graphicsView_th_vs_time.getAxis("left").setStyle(tickTextOffset=10)
-        self.graphicsView_th_vs_time.showAxis("top")
-        self.graphicsView_th_vs_time.getAxis("top").setTicks([])
-        self.graphicsView_th_vs_time.showAxis("right")
-        self.graphicsView_th_vs_time.getAxis("right").setTicks([])
+        self.label_thVsTime = QtWidgets.QLabel(self.centralwidget)
+        self.__create_element(self.label_thVsTime, [140, 158, 219, 31], "label_thVsTime", text="th (degrees) vs Time per step (s)", font=font_headline, stylesheet="QLabel { color : blue; }")
+        self.groupBox_thVsTime = QtWidgets.QGroupBox(self.centralwidget)
+        self.__create_element(self.groupBox_thVsTime, [5, 170-self.offset_os, 490, 290+self.offset_os], "groupBox_thVsTime", title="")
+        self.graphicsView_thVsTime = pg.PlotWidget(self.centralwidget, view=pg.PlotItem(viewBox=pg.ViewBox()))
+        self.__create_element(self.graphicsView_thVsTime, [7, 189, 487, 270], "graphicsView_thVsTime")
+        self.graphicsView_thVsTime.getAxis("bottom").tickFont = font_graphs
+        self.graphicsView_thVsTime.getAxis("bottom").setStyle(tickTextOffset=10)
+        self.graphicsView_thVsTime.getAxis("left").tickFont = font_graphs
+        self.graphicsView_thVsTime.getAxis("left").setStyle(tickTextOffset=10)
+        self.graphicsView_thVsTime.showAxis("top")
+        self.graphicsView_thVsTime.getAxis("top").setTicks([])
+        self.graphicsView_thVsTime.showAxis("right")
+        self.graphicsView_thVsTime.getAxis("right").setTicks([])
 
         # Graph: tv vs s1hg, s2hg
-        self.label_th_vs_s1hg_s2hg = QtWidgets.QLabel(self.centralwidget)
-        self.__create_element(self.label_th_vs_s1hg_s2hg, [140, 465, 261, 31], "label_th_vs_s1hg_s2hg", text="th (degrees) vs s1hg (mm), s2hg (mm)", font=font_headline)
-        self.groupBox_th_vs_s1hg_s2hg = QtWidgets.QGroupBox(self.centralwidget)
-        self.__create_element(self.groupBox_th_vs_s1hg_s2hg, [5, 477-self.groupbox_os_displ, 490, 290+self.groupbox_os_displ], "groupBox_th_vs_s1hg_s2hg", title="")
-        self.graphicsView_th_vs_s1hg_s2hg = pg.PlotWidget(self.centralwidget, view=pg.PlotItem(viewBox=pg.ViewBox()))
-        self.__create_element(self.graphicsView_th_vs_s1hg_s2hg, [7, 496, 487, 270], "graphicsView_th_vs_s1hg_s2hg")
-        self.graphicsView_th_vs_s1hg_s2hg.getAxis("bottom").tickFont = font_graphs
-        self.graphicsView_th_vs_s1hg_s2hg.getAxis("bottom").setStyle(tickTextOffset=10)
-        self.graphicsView_th_vs_s1hg_s2hg.getAxis("left").tickFont = font_graphs
-        self.graphicsView_th_vs_s1hg_s2hg.getAxis("left").setStyle(tickTextOffset=10)
-        self.graphicsView_th_vs_s1hg_s2hg.showAxis("top")
-        self.graphicsView_th_vs_s1hg_s2hg.getAxis("top").setTicks([])
-        self.graphicsView_th_vs_s1hg_s2hg.showAxis("right")
-        self.graphicsView_th_vs_s1hg_s2hg.getAxis("right").setTicks([])
-        self.graphicsView_th_vs_s1hg_s2hg.getViewBox().setXLink(self.graphicsView_th_vs_time)
+        self.label_thVsS1hgS2hg = QtWidgets.QLabel(self.centralwidget)
+        self.__create_element(self.label_thVsS1hgS2hg, [140, 465, 261, 31], "label_thVsS1hgS2hg", text="th (degrees) vs s1hg (mm), s2hg (mm)", font=font_headline, stylesheet="QLabel { color : blue; }")
+        self.groupBox_thVsS1hgS2hg = QtWidgets.QGroupBox(self.centralwidget)
+        self.__create_element(self.groupBox_thVsS1hgS2hg, [5, 477-self.offset_os, 490, 290+self.offset_os], "groupBox_thVsS1hgS2hg", title="")
+        self.graphicsView_thVsS1hgS2hg = pg.PlotWidget(self.centralwidget, view=pg.PlotItem(viewBox=pg.ViewBox()))
+        self.__create_element(self.graphicsView_thVsS1hgS2hg, [7, 496, 487, 270], "graphicsView_thVsS1hgS2hg")
+        self.graphicsView_thVsS1hgS2hg.getAxis("bottom").tickFont = font_graphs
+        self.graphicsView_thVsS1hgS2hg.getAxis("bottom").setStyle(tickTextOffset=10)
+        self.graphicsView_thVsS1hgS2hg.getAxis("left").tickFont = font_graphs
+        self.graphicsView_thVsS1hgS2hg.getAxis("left").setStyle(tickTextOffset=10)
+        self.graphicsView_thVsS1hgS2hg.showAxis("top")
+        self.graphicsView_thVsS1hgS2hg.getAxis("top").setTicks([])
+        self.graphicsView_thVsS1hgS2hg.showAxis("right")
+        self.graphicsView_thVsS1hgS2hg.getAxis("right").setTicks([])
+        self.graphicsView_thVsS1hgS2hg.getViewBox().setXLink(self.graphicsView_thVsTime)
 
         # MenuBar
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -162,11 +162,11 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.menuHelp = QtWidgets.QMenu(self.menubar)
         self.__create_element(self.menuHelp, [999, 999, 999, 999], "menuHelp", title="Help")
         MainWindow.setMenuBar(self.menubar)
-        self.actionAlgorithm_info = QtWidgets.QAction(MainWindow)
-        self.__create_element(self.actionAlgorithm_info, [999, 999, 999, 999], "actionAlgorithm_info")
-        self.actionVersion = QtWidgets.QAction(MainWindow)
-        self.__create_element(self.actionVersion, [999, 999, 999, 999], "actionVersion", text="Version 1.1")
-        self.menuHelp.addAction(self.actionVersion)
+        self.action_algorithmInfo = QtWidgets.QAction(MainWindow)
+        self.__create_element(self.action_algorithmInfo, [999, 999, 999, 999], "action_algorithmInfo")
+        self.action_version = QtWidgets.QAction(MainWindow)
+        self.__create_element(self.action_version, [999, 999, 999, 999], "action_version", text="Version 1.1")
+        self.menuHelp.addAction(self.action_version)
         self.menubar.addAction(self.menuHelp.menuAction())
 
         # StatusBar
@@ -176,181 +176,181 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.statusbar.showMessage("Total time to execute the script is approximately: ")
 
 class GUI(Ui_MainWindow):
-    current_dir = os.getcwd().replace("\\", "/") + "/"
+    dir_current = os.getcwd().replace("\\", "/") + "/"
 
     def __init__(self):
         super(GUI, self).__init__()
         self.setupUi(self)
 
-        self.change_interface()
+        self.f_interface_change()
 
         # Triggers
-        self.pushButton_create.clicked.connect(self.buttons_click)
-        self.pushButton_preview.clicked.connect(self.buttons_click)
+        self.pushButton_create.clicked.connect(self.f_buttons_click)
+        self.pushButton_preview.clicked.connect(self.f_buttons_click)
 
-        self.checkBox_Slits_s1hg.stateChanged.connect(self.change_interface)
-        self.checkBox_Slits_s2hg.stateChanged.connect(self.change_interface)
+        self.checkBox_slits_s1hg.stateChanged.connect(self.f_interface_change)
+        self.checkBox_slits_s2hg.stateChanged.connect(self.f_interface_change)
 
-        self.actionVersion.triggered.connect(self.menu_info)
+        self.action_version.triggered.connect(self.f_menu_info)
 
-    def buttons_click(self):
+    def f_buttons_click(self):
 
-        plot_time.clear()
-        plot_th.clear()
-        plot_s1hg.clear()
-        plot_s2hg.clear()
+        time_plot.clear()
+        th_plot.clear()
+        s1hg_plot.clear()
+        s2hg_plot.clear()
 
-        for i in self.graphicsView_th_vs_time.getPlotItem().listDataItems(): self.graphicsView_th_vs_time.getPlotItem().removeItem(i)
-        for i in self.graphicsView_th_vs_s1hg_s2hg.getPlotItem().listDataItems(): self.graphicsView_th_vs_s1hg_s2hg.getPlotItem().removeItem(i)
+        for i in self.graphicsView_thVsTime.getPlotItem().listDataItems(): self.graphicsView_thVsTime.getPlotItem().removeItem(i)
+        for i in self.graphicsView_thVsS1hgS2hg.getPlotItem().listDataItems(): self.graphicsView_thVsS1hgS2hg.getPlotItem().removeItem(i)
 
         # th s1hg s2hg total_time - this is needed to "connect" segments if more than 1 is needed
-        last_values = [99, 0, 0, 0]
-        motors_string_last = ""
+        values_last = [99, 0, 0, 0]
+        motors_last_string = ""
         # check users input and number of filled segments
-        not_allowed_symbols = re.compile(r'[^0-9:.-]')
+        notAllowedSymbols = re.compile(r'[^0-9:.-]')
 
-        notEmpty_segments = 0
+        notEmptySegments = 0
         for col in range(0, self.tableWidget.columnCount()):
 
-            notEmpty_segments += [1 if self.tableWidget.item(col, 0).text().find(":") > 0 else 0][0]
+            notEmptySegments += [1 if self.tableWidget.item(col, 0).text().find(":") > 0 else 0][0]
 
             for row in range(0, self.tableWidget.rowCount()-2):
-                if not_allowed_symbols.findall(self.tableWidget.item(col, row).text()):
+                if notAllowedSymbols.findall(self.tableWidget.item(col, row).text()):
                     self.statusbar.showMessage("Recheck your input for typos in the segment " + str(col+1) + ".")
                     return
 
-        for segment_number in range(0, notEmpty_segments):
+        for segmentNumber in range(0, notEmptySegments):
 
-            th = self.tableWidget.item(segment_number, 0).text()
+            th = self.tableWidget.item(segmentNumber, 0).text()
 
-            column_number_if_slits = 0
-            if self.checkBox_Slits_s1hg.isChecked():
-                s1hg, column_number_if_slits = self.tableWidget.item(segment_number, 1).text(), 1
-                if self.checkBox_Slits_s2hg.isChecked(): s2hg, column_number_if_slits = self.tableWidget.item(segment_number, 2).text(), 2
-            elif self.checkBox_Slits_s2hg.isChecked(): s2hg, column_number_if_slits = self.tableWidget.item(segment_number, 1).text(), 1
+            columnNumberIfSlits = 0
+            if self.checkBox_slits_s1hg.isChecked():
+                s1hg, columnNumberIfSlits = self.tableWidget.item(segmentNumber, 1).text(), 1
+                if self.checkBox_slits_s2hg.isChecked(): s2hg, columnNumberIfSlits = self.tableWidget.item(segmentNumber, 2).text(), 2
+            elif self.checkBox_slits_s2hg.isChecked(): s2hg, columnNumberIfSlits = self.tableWidget.item(segmentNumber, 1).text(), 1
 
-            time_per_step = self.tableWidget.item(segment_number, column_number_if_slits + 1).text()
-            number_of_points = self.tableWidget.item(segment_number, column_number_if_slits + 2).text()
+            timePerStep = self.tableWidget.item(segmentNumber, columnNumberIfSlits + 1).text()
+            numberOfPoints = self.tableWidget.item(segmentNumber, columnNumberIfSlits + 2).text()
 
             segment = []
 
             step.th = float(th[:th.find(":")])
-            th_step = (float(th[th.find(":") + 1:]) - step.th) / float(number_of_points)
-            if abs(th_step) <= th_minimum_step:  # adjust number of points and th step if required th step is less than minimum possible
-                th_step = math.copysign(th_minimum_step, th_step)
-                number_of_points = (float(th[th.find(":") + 1:]) - step.th) / th_minimum_step  #
+            th_step = (float(th[th.find(":") + 1:]) - step.th) / float(numberOfPoints)
+            if abs(th_step) <= th_stepMinimum:  # adjust number of points and th step if required th step is less than minimum possible
+                th_step = math.copysign(th_stepMinimum, th_step)
+                numberOfPoints = (float(th[th.find(":") + 1:]) - step.th) / th_stepMinimum  #
 
             step.s1hg, s1hg_step = 0, 0
-            if self.checkBox_Slits_s1hg.isChecked():
+            if self.checkBox_slits_s1hg.isChecked():
                 if s1hg.find(":") >= 0:
                     step.s1hg = step.s1hg_temp = float(s1hg[:s1hg.find(":")])
-                    s1hg_step = (float(s1hg[s1hg.find(":") + 1:]) - step.s1hg) / float(number_of_points)
+                    s1hg_step = (float(s1hg[s1hg.find(":") + 1:]) - step.s1hg) / float(numberOfPoints)
                 else: step.s1hg = step.s1hg_temp = float(s1hg)
 
             step.s2hg, s2hg_step = 0, 0
-            if self.checkBox_Slits_s2hg.isChecked():
+            if self.checkBox_slits_s2hg.isChecked():
                 if s2hg.find(":") >= 0:
                     step.s2hg = step.s2hg_temp = float(s2hg[:s2hg.find(":")])
-                    s2hg_step = (float(s2hg[s2hg.find(":") + 1:]) - step.s2hg) / float(number_of_points)
+                    s2hg_step = (float(s2hg[s2hg.find(":") + 1:]) - step.s2hg) / float(numberOfPoints)
                 else: step.s2hg = step.s2hg_temp = float(s2hg)
 
-            time_per_step_step = 0
-            if time_per_step.find(":") >= 0:
-                step.time = round(float(time_per_step[:time_per_step.find(":")]), 1)
-                time_per_step_step = (float(time_per_step[time_per_step.find(":") + 1:]) - step.time) / float(number_of_points)
-            else: step.time = round(float(time_per_step), 1)
+            timePerStep_step = 0
+            if timePerStep.find(":") >= 0:
+                step.time = round(float(timePerStep[:timePerStep.find(":")]), 1)
+                timePerStep_step = (float(timePerStep[timePerStep.find(":") + 1:]) - step.time) / float(numberOfPoints)
+            else: step.time = round(float(timePerStep), 1)
 
-            if not round(last_values[0], 2) == round(step.th, 2): segment.append([step.th, 2 * step.th, step.s1hg, step.s2hg, step.time])  # connect 2 segments without repeat the same th angle
+            if not round(values_last[0], 2) == round(step.th, 2): segment.append([step.th, 2 * step.th, step.s1hg, step.s2hg, step.time])  # connect 2 segments without repeat the same th angle
 
             i = 0
-            while i != int(number_of_points):  # create 2D list for current segment
+            while i != int(numberOfPoints):  # create 2D list for current segment
                 step.th += th_step
-                step.time += time_per_step_step
-                if self.checkBox_Slits_s1hg.isChecked():
+                step.time += timePerStep_step
+                if self.checkBox_slits_s1hg.isChecked():
                     step.s1hg_temp += s1hg_step
                     # if step size for s1hg is less than minimum possible for motor, than we need skip this move
-                    if abs(step.s1hg_temp - step.s1hg) > s1hg_minimum_step: step.s1hg = step.s1hg_temp
-                if self.checkBox_Slits_s2hg.isChecked():
+                    if abs(step.s1hg_temp - step.s1hg) > s1hg_stepMinimum: step.s1hg = step.s1hg_temp
+                if self.checkBox_slits_s2hg.isChecked():
                     step.s2hg_temp += s2hg_step
                     # if step size for s2hg is less than minimum possible for motor, than we need skip this move
-                    if abs(step.s2hg_temp - step.s2hg) > s2hg_minimum_step: step.s2hg = step.s2hg_temp
+                    if abs(step.s2hg_temp - step.s2hg) > s2hg_stepMinimum: step.s2hg = step.s2hg_temp
                 # add new line for scanning
                 segment.append([round(step.th, 3), 2 * round(step.th, 3), round(step.s1hg, 2), round(step.s2hg, 2), round(step.time, 1)])
 
-                last_values[3] += segment[i][4] + 4  # total time for the scan
+                values_last[3] += segment[i][4] + 4  # total time for the scan
                 i += 1
 
             for segment_record in segment:
-                plot_time.append(segment_record[4])
-                plot_th.append(segment_record[0])
-                if self.checkBox_Slits_s1hg.isChecked(): plot_s1hg.append(segment_record[2])
-                if self.checkBox_Slits_s2hg.isChecked(): plot_s2hg.append(segment_record[3])
+                time_plot.append(segment_record[4])
+                th_plot.append(segment_record[0])
+                if self.checkBox_slits_s1hg.isChecked(): s1hg_plot.append(segment_record[2])
+                if self.checkBox_slits_s2hg.isChecked(): s2hg_plot.append(segment_record[3])
 
-        self.s1 = pg.ScatterPlotItem(x=plot_th, y=plot_time, symbol="o", size=5, pen=pg.mkPen(0.2), brush=pg.mkBrush(0.7))
-        self.graphicsView_th_vs_time.addItem(self.s1)
-        if self.checkBox_Slits_s1hg.isChecked():
-            self.s2 = pg.ScatterPlotItem(x=plot_th, y=plot_s1hg, symbol="o", size=5, pen=pg.mkPen(0.8), brush=pg.mkBrush(0.1))
-            self.graphicsView_th_vs_s1hg_s2hg.addItem(self.s2)
-        if self.checkBox_Slits_s2hg.isChecked():
-            self.s3 = pg.ScatterPlotItem(x=plot_th, y=plot_s2hg, symbol="o", size=5, pen=pg.mkPen(0.2), brush=pg.mkBrush(0.7))
-            self.graphicsView_th_vs_s1hg_s2hg.addItem(self.s3)
+        self.s1 = pg.ScatterPlotItem(x=th_plot, y=time_plot, symbol="o", size=5, pen=pg.mkPen(0.2), brush=pg.mkBrush(0.7))
+        self.graphicsView_thVsTime.addItem(self.s1)
+        if self.checkBox_slits_s1hg.isChecked():
+            self.s2 = pg.ScatterPlotItem(x=th_plot, y=s1hg_plot, symbol="o", size=5, pen=pg.mkPen(0.8), brush=pg.mkBrush(0.1))
+            self.graphicsView_thVsS1hgS2hg.addItem(self.s2)
+        if self.checkBox_slits_s2hg.isChecked():
+            self.s3 = pg.ScatterPlotItem(x=th_plot, y=s2hg_plot, symbol="o", size=5, pen=pg.mkPen(0.2), brush=pg.mkBrush(0.7))
+            self.graphicsView_thVsS1hgS2hg.addItem(self.s3)
 
-        if int((round(last_values[3] // 3600, 2))) == 0:
-            time = str(int(round(last_values[3] / 60))) + " min."
-        else: time = str(int(round(last_values[3] // 3600))) + "h " + str(int(round((last_values[3] % 3600)/60))) + "min (" + (str(int(round(last_values[3] / 60)))) + " min)."
+        if int((round(values_last[3] // 3600, 2))) == 0:
+            time = str(int(round(values_last[3] / 60))) + " min."
+        else: time = str(int(round(values_last[3] // 3600))) + "h " + str(int(round((values_last[3] % 3600)/60))) + "min (" + (str(int(round(values_last[3] / 60)))) + " min)."
 
         self.statusbar.showMessage("Total time to execute the script is approximately: " + time)
 
         if self.sender().objectName() == "pushButton_create":
 
-            last_values = [99, 0, 0, last_values[3]]
+            values_last = [99, 0, 0, values_last[3]]
 
             saveAt_dir = QtWidgets.QFileDialog().getExistingDirectory()
             if not saveAt_dir: return
 
             # write the first line with motor names and erase file if required
-            FILE_SCRIPT = open(saveAt_dir + "/Script_" + str(int(round(last_values[3] // 60))) + "_min.dat", "w")
-            if self.checkBox_Slits_s1hg.isChecked() and self.checkBox_Slits_s2hg.isChecked(): motors_string_header = "#M th tth s1hg s2hg \n"
-            elif self.checkBox_Slits_s1hg.isChecked(): motors_string_header = "#M th tth s1hg \n"
-            elif self.checkBox_Slits_s2hg.isChecked(): motors_string_header = "#M th tth s2hg \n"
+            FILE_SCRIPT = open(saveAt_dir + "/Script_" + str(int(round(values_last[3] // 60))) + "_min.dat", "w")
+            if self.checkBox_slits_s1hg.isChecked() and self.checkBox_slits_s2hg.isChecked(): motors_string_header = "#M th tth s1hg s2hg \n"
+            elif self.checkBox_slits_s1hg.isChecked(): motors_string_header = "#M th tth s1hg \n"
+            elif self.checkBox_slits_s2hg.isChecked(): motors_string_header = "#M th tth s2hg \n"
             else: motors_string_header = "#M th tth \n"
             FILE_SCRIPT.write(motors_string_header)
 
             # same for direct beam file (if required)
-            if self.checkBox_Create_DB_file.isChecked():
-                FILE_DB = open(saveAt_dir + "/Script_" + str(int(round(last_values[3] // 60, 2))) + "_min_DB.dat", "w")
+            if self.checkBox_createDBfile.isChecked():
+                FILE_DB = open(saveAt_dir + "/Script_" + str(int(round(values_last[3] // 60, 2))) + "_min_DB.dat", "w")
                 FILE_DB.write(motors_string_header)
 
-            for i, plot_th_i in enumerate(plot_th):
+            for i, th_plot_i in enumerate(th_plot):
 
                 # write to script file
-                if self.checkBox_Slits_s1hg.isChecked() and self.checkBox_Slits_s2hg.isChecked():
-                    motors_string = str(plot_th_i) + " " + str(plot_th_i*2) + " " + str(plot_s1hg[i]) + " " + str(plot_s2hg[i]) + " " + str(plot_time[i]) + "\n"
-                    motors_string_DB = "0 0 " + str(plot_s1hg[i]) + " " + str(plot_s2hg[i]) + " 10" + "\n"
-                elif self.checkBox_Slits_s1hg.isChecked():
-                    motors_string = str(plot_th_i) + " " + str(plot_th_i*2) + " " + str(plot_s1hg[i]) + " " +  str(plot_time[i]) + "\n"
-                    motors_string_DB = "0 0 " + str(plot_s1hg[i]) + " 10" + "\n"
-                elif self.checkBox_Slits_s2hg.isChecked():
-                    motors_string = str(plot_th_i) + " " + str(plot_th_i*2) + " " + str(plot_s2hg[i]) + " " + str(plot_time[i]) + "\n"
-                    motors_string_DB = "0 0 " + str(plot_s2hg[i]) + " 10" + "\n"
-                else: motors_string = str(plot_th_i) + " " + str(plot_th_i*2) + " " + str(plot_time[i]) + "\n"
+                if self.checkBox_slits_s1hg.isChecked() and self.checkBox_slits_s2hg.isChecked():
+                    motors_string = str(th_plot_i) + " " + str(th_plot_i*2) + " " + str(s1hg_plot[i]) + " " + str(s2hg_plot[i]) + " " + str(time_plot[i]) + "\n"
+                    motors_string_DB = "0 0 " + str(s1hg_plot[i]) + " " + str(s2hg_plot[i]) + " 10" + "\n"
+                elif self.checkBox_slits_s1hg.isChecked():
+                    motors_string = str(th_plot_i) + " " + str(th_plot_i*2) + " " + str(s1hg_plot[i]) + " " +  str(time_plot[i]) + "\n"
+                    motors_string_DB = "0 0 " + str(s1hg_plot[i]) + " 10" + "\n"
+                elif self.checkBox_slits_s2hg.isChecked():
+                    motors_string = str(th_plot_i) + " " + str(th_plot_i*2) + " " + str(s2hg_plot[i]) + " " + str(time_plot[i]) + "\n"
+                    motors_string_DB = "0 0 " + str(s2hg_plot[i]) + " 10" + "\n"
+                else: motors_string = str(th_plot_i) + " " + str(th_plot_i*2) + " " + str(time_plot[i]) + "\n"
 
-                if not motors_string_last == motors_string: FILE_SCRIPT.write(motors_string)
-                motors_string_last = motors_string
+                if not motors_last_string == motors_string: FILE_SCRIPT.write(motors_string)
+                motors_last_string = motors_string
 
                 # write to DB script file
-                if self.checkBox_Create_DB_file.isChecked() and (not plot_s1hg[i] == last_values[1] or not plot_s2hg[i] == last_values[2]):
+                if self.checkBox_createDBfile.isChecked() and (not s1hg_plot[i] == values_last[1] or not s2hg_plot[i] == values_last[2]):
                     FILE_DB.write(motors_string_DB)
-                    last_values[1], last_values[2] = plot_s1hg[i], plot_s2hg[i]  # s1hg s2hg
+                    values_last[1], values_last[2] = s1hg_plot[i], s2hg_plot[i]  # s1hg s2hg
 
             FILE_SCRIPT.close()
-            if self.checkBox_Create_DB_file.isChecked(): FILE_DB.close()
+            if self.checkBox_createDBfile.isChecked(): FILE_DB.close()
 
-    def change_interface(self):
+    def f_interface_change(self):
 
         self.statusbar.showMessage("")
 
-        if self.checkBox_Slits_s1hg.isChecked():
+        if self.checkBox_slits_s1hg.isChecked():
             self.tableWidget.setColumnCount(4)
 
             column_names = ["th (degree)", "s1hg (mm)", "time per step (s)", "number of points"]
@@ -358,11 +358,11 @@ class GUI(Ui_MainWindow):
             default_line = ["0:2", "0.5:1", "5:60", "50"]
 
             self.MW_size = 811 if platform.system() == 'Windows' else 790
-            self.label_th_vs_s1hg_s2hg.setText("th (degrees) vs s1hg (mm)")
-            self.label_th_vs_s1hg_s2hg.setGeometry(QtCore.QRect(165, 465, 261, 31))
-            self.checkBox_Create_DB_file.setVisible(True)
+            self.label_thVsS1hgS2hg.setText("th (degrees) vs s1hg (mm)")
+            self.label_thVsS1hgS2hg.setGeometry(QtCore.QRect(165, 465, 261, 31))
+            self.checkBox_createDBfile.setVisible(True)
 
-        if self.checkBox_Slits_s2hg.isChecked():
+        if self.checkBox_slits_s2hg.isChecked():
             self.tableWidget.setColumnCount(4)
 
             column_names = ["th (degree)", "s2hg (mm)", "time per step (s)", "number of points"]
@@ -370,11 +370,11 @@ class GUI(Ui_MainWindow):
             default_line = ["0:2", "0.5:1", "5:60", "50"]
 
             self.MW_size = 811 if platform.system() == 'Windows' else 790
-            self.label_th_vs_s1hg_s2hg.setText("th (degrees) vs s2hg (mm)")
-            self.label_th_vs_s1hg_s2hg.setGeometry(QtCore.QRect(165, 465, 261, 31))
-            self.checkBox_Create_DB_file.setVisible(True)
+            self.label_thVsS1hgS2hg.setText("th (degrees) vs s2hg (mm)")
+            self.label_thVsS1hgS2hg.setGeometry(QtCore.QRect(165, 465, 261, 31))
+            self.checkBox_createDBfile.setVisible(True)
 
-        if self.checkBox_Slits_s1hg.isChecked() and self.checkBox_Slits_s2hg.isChecked():
+        if self.checkBox_slits_s1hg.isChecked() and self.checkBox_slits_s2hg.isChecked():
             self.tableWidget.setColumnCount(5)
 
             column_names = ["th (degree)", "s1hg (mm)", "s2hg (mm)", "time per step (s)", "number of points"]
@@ -382,11 +382,11 @@ class GUI(Ui_MainWindow):
             default_line = ["0:2", "0.5:1", "1", "5:60", "50"]
 
             self.MW_size = 811 if platform.system() == 'Windows' else 790
-            self.label_th_vs_s1hg_s2hg.setText("th (degree) vs s1hg (mm), s2hg (mm)")
-            self.label_th_vs_s1hg_s2hg.setGeometry(QtCore.QRect(130, 465, 261, 31))
-            self.checkBox_Create_DB_file.setVisible(True)
+            self.label_thVsS1hgS2hg.setText("th (degree) vs s1hg (mm), s2hg (mm)")
+            self.label_thVsS1hgS2hg.setGeometry(QtCore.QRect(130, 465, 261, 31))
+            self.checkBox_createDBfile.setVisible(True)
 
-        if not self.checkBox_Slits_s1hg.isChecked() and not self.checkBox_Slits_s2hg.isChecked():
+        if not self.checkBox_slits_s1hg.isChecked() and not self.checkBox_slits_s2hg.isChecked():
             self.tableWidget.setColumnCount(3)
 
             column_names = ["th (degrees)", "time per step (s)", "number of points"]
@@ -394,7 +394,7 @@ class GUI(Ui_MainWindow):
             default_line = ["0:2", "5:60", "50"]
 
             self.MW_size = 503 if platform.system() == 'Windows' else 482
-            self.checkBox_Create_DB_file.setVisible(False)
+            self.checkBox_createDBfile.setVisible(False)
 
         self.resize(500, self.MW_size)
         self.setMinimumSize(QtCore.QSize(500, self.MW_size))
@@ -420,7 +420,7 @@ class GUI(Ui_MainWindow):
                 if i == 0: item.setText(default_line[j])
                 self.tableWidget.setItem(i, j, item)
 
-    def menu_info(self):
+    def f_menu_info(self):
 
         msgBox = QtWidgets.QMessageBox()
         msgBox.setWindowIcon(QtGui.QIcon(self.iconpath))
