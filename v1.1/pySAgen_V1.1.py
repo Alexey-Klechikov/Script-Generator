@@ -219,8 +219,9 @@ class GUI(Ui_MainWindow):
                     self.statusbar.showMessage("Recheck your input for typos in the segment " + str(col+1) + ".")
                     return
 
-        for segmentNumber in range(0, notEmptySegments):
+        scriptDescription = f"# pySAgen table \n# th|{'s1hg' if self.checkBox_slits_s1hg.isChecked() else ''}|{'s2hg' if self.checkBox_slits_s2hg.isChecked() else ''}|time|steps\n"
 
+        for segmentNumber in range(0, notEmptySegments):
             th = self.tableWidget.item(segmentNumber, 0).text()
 
             columnNumberIfSlits = 0
@@ -231,6 +232,8 @@ class GUI(Ui_MainWindow):
 
             timePerStep = self.tableWidget.item(segmentNumber, columnNumberIfSlits + 1).text()
             numberOfPoints = self.tableWidget.item(segmentNumber, columnNumberIfSlits + 2).text()
+
+            scriptDescription += f"# {str(th)}|{str(s1hg) if self.checkBox_slits_s1hg.isChecked() else ''}|{str(s2hg) if self.checkBox_slits_s2hg.isChecked() else ''}|{str(timePerStep)}|{str(numberOfPoints)} \n"
 
             segment = []
 
@@ -295,8 +298,7 @@ class GUI(Ui_MainWindow):
             self.s3 = pg.ScatterPlotItem(x=th_plot, y=s2hg_plot, symbol="o", size=5, pen=pg.mkPen(0.2), brush=pg.mkBrush(0.7))
             self.graphicsView_thVsS1hgS2hg.addItem(self.s3)
 
-        if int((round(values_last[3] // 3600, 2))) == 0:
-            time = str(int(round(values_last[3] / 60))) + " min."
+        if int((round(values_last[3] // 3600, 2))) == 0: time = str(int(round(values_last[3] / 60))) + " min."
         else: time = str(int(round(values_last[3] // 3600))) + "h " + str(int(round((values_last[3] % 3600)/60))) + "min (" + (str(int(round(values_last[3] / 60)))) + " min)."
 
         self.statusbar.showMessage("Total time to execute the script is approximately: " + time)
@@ -310,16 +312,15 @@ class GUI(Ui_MainWindow):
 
             # write the first line with motor names and erase file if required
             FILE_SCRIPT = open(saveAt_dir + "/Script_" + str(int(round(values_last[3] // 60))) + "_min.dat", "w")
-            if self.checkBox_slits_s1hg.isChecked() and self.checkBox_slits_s2hg.isChecked(): motors_string_header = "#M th tth s1hg s2hg \n"
-            elif self.checkBox_slits_s1hg.isChecked(): motors_string_header = "#M th tth s1hg \n"
-            elif self.checkBox_slits_s2hg.isChecked(): motors_string_header = "#M th tth s2hg \n"
-            else: motors_string_header = "#M th tth \n"
-            FILE_SCRIPT.write(motors_string_header)
+
+            motorsString_header = f"#M th tth{' s1hg' if self.checkBox_slits_s1hg.isChecked() else ''}{' s2hg' if self.checkBox_slits_s2hg.isChecked() else ''} time\n"
+
+            FILE_SCRIPT.write(scriptDescription + "#\n" + motorsString_header)
 
             # same for direct beam file (if required)
             if self.checkBox_createDBfile.isChecked():
                 FILE_DB = open(saveAt_dir + "/Script_" + str(int(round(values_last[3] // 60, 2))) + "_min_DB.dat", "w")
-                FILE_DB.write(motors_string_header)
+                FILE_DB.write(motorsString_header)
 
             for i, th_plot_i in enumerate(th_plot):
 
