@@ -219,7 +219,7 @@ class GUI(Ui_MainWindow):
                     self.statusbar.showMessage("Recheck your input for typos in the segment " + str(col+1) + ".")
                     return
 
-        scriptDescription = f"# pySAgen table \n# th|{'s1hg' if self.checkBox_slits_s1hg.isChecked() else ''}|{'s2hg' if self.checkBox_slits_s2hg.isChecked() else ''}|time|steps\n"
+        scriptDescription = f"#C pySAgen table \n#C th|{'s1hg' if self.checkBox_slits_s1hg.isChecked() else ''}|{'s2hg' if self.checkBox_slits_s2hg.isChecked() else ''}|time|steps\n"
 
         for segmentNumber in range(0, notEmptySegments):
             th = self.tableWidget.item(segmentNumber, 0).text()
@@ -233,7 +233,7 @@ class GUI(Ui_MainWindow):
             timePerStep = self.tableWidget.item(segmentNumber, columnNumberIfSlits + 1).text()
             numberOfPoints = self.tableWidget.item(segmentNumber, columnNumberIfSlits + 2).text()
 
-            scriptDescription += f"# {str(th)}|{str(s1hg) if self.checkBox_slits_s1hg.isChecked() else ''}|{str(s2hg) if self.checkBox_slits_s2hg.isChecked() else ''}|{str(timePerStep)}|{str(numberOfPoints)} \n"
+            scriptDescription += f"#C {str(th)}|{str(s1hg) if self.checkBox_slits_s1hg.isChecked() else ''}|{str(s2hg) if self.checkBox_slits_s2hg.isChecked() else ''}|{str(timePerStep)}|{str(numberOfPoints)} \n"
 
             segment = []
 
@@ -313,9 +313,9 @@ class GUI(Ui_MainWindow):
             # write the first line with motor names and erase file if required
             FILE_SCRIPT = open(saveAt_dir + "/Script_" + str(int(round(values_last[3] // 60))) + "_min.dat", "w")
 
-            motorsString_header = f"#M th tth{' s1hg' if self.checkBox_slits_s1hg.isChecked() else ''}{' s2hg' if self.checkBox_slits_s2hg.isChecked() else ''} time\n"
+            motorsString_header = f"#M th tth{' s1hg' if self.checkBox_slits_s1hg.isChecked() else ''}{' s2hg' if self.checkBox_slits_s2hg.isChecked() else ''}\n"
 
-            FILE_SCRIPT.write(scriptDescription + "#\n" + motorsString_header)
+            FILE_SCRIPT.write(scriptDescription + "#C\n" + motorsString_header)
 
             # same for direct beam file (if required)
             if self.checkBox_createDBfile.isChecked():
